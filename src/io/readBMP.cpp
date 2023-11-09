@@ -33,9 +33,11 @@ Image* readBMP(FILE *BMP){
 	//prepare color table.
 	ColorInfo *colorTable=NULL;
 	int colorBytes=fHeader.offsetBytes-sizeof(BMPFileHeader)-sizeof(BMPImgHeader);
-	//read color info only when bitCount<=8 and has colorTable;
-	if(per<=8 && colorBytes>0){
-		colorTable=(ColorInfo *)malloc(colorBytes);
+	//read color info only when bitCount<8, which has colorTable;
+	if(per<8 && colorBytes>0){
+		//handle to binary system because byte-wise image can't operate it.
+		//colorTable=(ColorInfo *)malloc(colorBytes);
+		throw "Reading a BMP file whose bits count is less than 8! The program hasn't supportted it yet.";
 	}
 	//begin to read data.
 	fseek(BMP,fHeader.offsetBytes,SEEK_SET);
@@ -45,23 +47,23 @@ Image* readBMP(FILE *BMP){
 	else if(per==4*8) mode=BGRA;
 	Image *bmpImg=new Image(w,h,per,mode);
 	bmpImg->readFile(BMP);
-	
+
 	return bmpImg;
 }
 
 
 //write a BMPHeader to file.
-void storeBMPHeader(FILE *output,BMPFileHeader &fHeader,BMPImgHeader &iHeader){
+void storeBMPHeader(FILE *output,BMPFileHeader *fHeader,BMPImgHeader *iHeader){
 	if(output==NULL) return;
 	fseek(output,0,SEEK_SET);
 	unsigned short typeHead=BMPStdHead;
 	fwrite(&typeHead,sizeof(unsigned short),1,output);
-	fwrite(&fHeader,sizeof(BMPFileHeader),1,output);
-	fwrite(&iHeader,sizeof(BMPImgHeader),1,output);
+	fwrite(fHeader,sizeof(BMPFileHeader),1,output);
+	fwrite(iHeader,sizeof(BMPImgHeader),1,output);
 }
 
 
-//generate a BMPHeader according to the information of image.
+//generate a BMPHeader and write BMP(byte-wise) according to the information of image.
 void writeBMP(FILE *output,Image *img){
 	if(output==NULL) throw "try to output BMP image to a NULL file pointer!";
 	unsigned short typeHead=BMPStdHead;
@@ -108,13 +110,12 @@ void writeBMP(FILE *output,Image *img){
 	fwrite(img->getDataPtr(),iHeader.imgSize,1,output);
 }
 
-//safely open a file
+//safely open a file,overwrite.
 FILE *fopen_s(const char *name,const char *mode){
 	char path[30];
 	sprintf((char *)path,"../public/%s",name);
 	FILE *fp=fopen(path,mode);
 	if(fp==NULL){
-		printf("fail to open %s\n",name);
 		throw "fail to open the image!";
 	}
 	return fp;

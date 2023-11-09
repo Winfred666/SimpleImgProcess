@@ -5,7 +5,7 @@
 #include <stdlib.h>
 //indicate mode when color encoding is ambigious.
 enum ColorMode{
-	RGB,RGBA,BGR,BGRA,HSV,YUV,GRAY
+	RGB,RGBA,BGR,BGRA,HSV,YUV,GRAY,ONLY_REGION
 };
 
 typedef unsigned char Byte;

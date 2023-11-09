@@ -23,8 +23,7 @@ Byte * Image::getPixel(int x,int y){
     if(x<0 || x>=this->_w || y<0 || y>=this->_h){
         throw "Access pixel out of bound!\n";
     }
-    
-    return this->_img+((x*this->_h*this->_byteCounts)+(y*this->_byteCounts));
+    return this->_img+((y*this->_w*this->_byteCounts)+(x*this->_byteCounts));
 }
 
 //do operation to all pixel, also need to use bitCounts to make sure operating zone.

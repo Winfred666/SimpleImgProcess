@@ -38,7 +38,7 @@ typedef struct _ColorInfo{
 
 Image* readBMP(FILE *BMP);
 
-void storeBMPHeader(FILE *output,BMPFileHeader &fHeader,BMPImgHeader &iHeader);
+void storeBMPHeader(FILE *output,BMPFileHeader *fHeader,BMPImgHeader *iHeader);
 
 void writeBMP(FILE *output,Image *img);
 

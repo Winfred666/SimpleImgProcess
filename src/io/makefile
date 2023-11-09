@@ -1,11 +1,11 @@
-source=image.cpp colorTrans.cpp binaryImage.cpp
+source=readBMP.cpp
 
-compiler=g++ -std=c++11
+compiler=g++
 names=$(source:%.cpp=%)
 semifinished=$(source:%.cpp=%.o)
 
-output=./libcore.a
-ECHO=./src/core:
+output=./iocore.a
+ECHO=./src/io:
 
 makeO:=$(foreach fileName,$(names),$(compiler) -c $(fileName).cpp -o $(fileName).o$$;)
 
