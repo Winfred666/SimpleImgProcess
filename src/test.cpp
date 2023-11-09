@@ -3,68 +3,65 @@
 #include <vector>
 
 #include "./io/readBMP.h"
+#include "./io/readJPEG.h"
 
 #include "image.h"
-#include "binaryImage.h"
+#include "imageOpt.h"
 
 using namespace std;
 
+float linear_expand(float a){
+	float ret=0;
+	const float low=0.2f;
+	const float high=0.8f;
+	if(a<low) ret=0;
+	else if(a>high) ret=1;
+	else{
+		ret=(a-low)/(high-low);
+	}
+	return ret;
+}
+float linear_shrink(float a){
+	const float low=0.2f;
+	const float high=0.8f;
+	float ret=(high-low)*a+low;
+	return ret;
+}
 
+float pow4(float a){
+	return a*a*a*a;
+}
 
 int main(){
 	char fileName[20]="test.bmp";
-	
 	//wrapped by try-catch to collect and print string exception.
 	try{
 		FILE *fp=fopen_s(fileName,"rb");
+		FILE *out=fopen_s("verify/out_hiseql_V.bmp","wb");
+		//FILE *out2=fopen_s("verify/out_logarithm.bmp","wb");
 		
-		Image *gray=readBMP(fp);
+		Image *in=readBMP(fp);
+		//Image *copy=new Image(*in);
+		RGB2HSV(in);
+		//histogramEqualize_V(in);
+		histoTrans(in,pow4,2);
+		HSV2BGR(in);
+		//still have bug when write jpeg.
+		//writeJPEG(out,in);
+		writeBMP(out,in);
+		
+		//logarithmic_Y(copy,1.1);
+		//writeBMP(out2,copy);
 
-		BinaryImage *binary=gray2Binary(gray);
-		Image *binaGray=binary2Gray(binary);
-		FILE *out=fopen_s("binary.bmp","wb");
-		writeBMP(out,binaGray);
-		cout<<"successfully output binary image!"<<endl;
-
-		BinaryImage *erose=binary->erose(9);
-		Image *erosGray=binary2Gray(erose);
-		FILE *eroOut=fopen_s("binary_erosed.bmp","wb");
-		writeBMP(eroOut,erosGray);
-		delete erose;
-		delete erosGray;
-		cout<<"successfully do the erosion to binary image!"<<endl;
-		
-		BinaryImage *dilate=binary->dilate(9);
-		Image *dilaGray=binary2Gray(dilate);
-		FILE *dilOut=fopen_s("binary_dilate.bmp","wb");
-		writeBMP(dilOut,dilaGray);
-		delete dilate;
-		delete dilaGray;
-		cout<<"successfully do the dilation to binary image!"<<endl;
-		
-		BinaryImage *opente=binary->open(5);
-		Image *openGray=binary2Gray(opente);
-		FILE *openOut=fopen_s("binary_open.bmp","wb");
-		writeBMP(openOut,openGray);
-		delete opente;
-		delete openGray;
-		cout<<"successfully do the open operation to binary image!"<<endl;
-		
-		BinaryImage *closete=binary->close(5);
-		Image *closeGray=binary2Gray(closete);
-		FILE *closeOut=fopen_s("binary_close.bmp","wb");
-		writeBMP(closeOut,closeGray);
-		delete closete;
-		delete closeGray;
-		cout<<"successfully do the close operation to binary image!"<<endl;
-		
-		delete gray;
-		delete binary;
-		delete binaGray;
-		
-		
+		fclose(fp);
+		fclose(out);
+		//fclose(out2);
+		delete in;
+		//delete copy;
 	}catch(char const *e){
 		printf("catch Exception: %s\n",e);
+	}catch(string e){
+		printf("cath Exception with info: %s\n",e.c_str());
 	}catch(...){
 		printf("Unexpected error occur!");
 	}

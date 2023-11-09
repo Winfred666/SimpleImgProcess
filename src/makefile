@@ -1,23 +1,20 @@
-appName=Binarize
+appName=histogram
 
 testFile=test.cpp
 
-ioSource=./io/readBMP.cpp 
+ioSource=./io/readBMP.cpp ./io/readJPEG.cpp ./io/bitOpt.cpp
+
 compiler=g++ -std=c++11
 core=core
 exec=$(appName).exe
 ECHO=./src:
 
 $(appName): $(ioSource) $(testFile)
-	@echo $(ECHO)precompiling "cores",generate static lib
-
+	@echo off
 ifeq ($(OS),Windows_NT)
-	mingw32-make -C core
+	mingw32-make -C core -s
 else
 	make -C core
 endif
-
-	@echo $(ECHO)linking .a, generate executable file
 	$(compiler) $(ioSource) $(testFile) -o $(exec) -I $(core)/ -L $(core)/ -l$(core) -static
-
 	@echo Success!

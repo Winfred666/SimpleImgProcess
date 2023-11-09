@@ -15,8 +15,8 @@ Image* readBMP(FILE *BMP){
 	BMPFileHeader fHeader;
 	BMPImgHeader iHeader;
 	//read file head
-	unsigned short typeTag=0;
-	fread(&typeTag,1,sizeof(unsigned short),BMP);
+	uint16_t typeTag=0;
+	fread(&typeTag,1,sizeof(uint16_t),BMP);
 	if(typeTag!=BMPStdHead){
 		throw "BMP type tag error!";
 	}
@@ -56,8 +56,8 @@ Image* readBMP(FILE *BMP){
 void storeBMPHeader(FILE *output,BMPFileHeader *fHeader,BMPImgHeader *iHeader){
 	if(output==NULL) return;
 	fseek(output,0,SEEK_SET);
-	unsigned short typeHead=BMPStdHead;
-	fwrite(&typeHead,sizeof(unsigned short),1,output);
+	uint16_t typeHead=BMPStdHead;
+	fwrite(&typeHead,sizeof(uint16_t),1,output);
 	fwrite(fHeader,sizeof(BMPFileHeader),1,output);
 	fwrite(iHeader,sizeof(BMPImgHeader),1,output);
 }
@@ -66,8 +66,8 @@ void storeBMPHeader(FILE *output,BMPFileHeader *fHeader,BMPImgHeader *iHeader){
 //generate a BMPHeader and write BMP(byte-wise) according to the information of image.
 void writeBMP(FILE *output,Image *img){
 	if(output==NULL) throw "try to output BMP image to a NULL file pointer!";
-	unsigned short typeHead=BMPStdHead;
-	fwrite(&typeHead,sizeof(unsigned short),1,output);
+	uint16_t typeHead=BMPStdHead;
+	fwrite(&typeHead,sizeof(uint16_t),1,output);
 	BMPFileHeader fHeader;
 	BMPImgHeader iHeader;
 	iHeader.bitCount=img->bytePerPixel()*8;
@@ -93,7 +93,7 @@ void writeBMP(FILE *output,Image *img){
 		}
 	}
 
-	fHeader.offsetBytes=sizeof(unsigned short)+sizeof(BMPFileHeader)+iHeader.headerSize + sizeof(ColorInfo)*useColorNum;
+	fHeader.offsetBytes=sizeof(uint16_t)+sizeof(BMPFileHeader)+iHeader.headerSize + sizeof(ColorInfo)*useColorNum;
 	
 	fHeader.fileSize=fHeader.offsetBytes+iHeader.imgSize;
 	fHeader.reserved1=fHeader.reserved2=0;

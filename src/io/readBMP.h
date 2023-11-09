@@ -6,33 +6,33 @@
 
 typedef struct _BMPFileHeader{
 	//because of Struct completion, skip typeTag.
-	//unsigned short typeTag; //type tag of bmp( 2 bytes,must be 0x4d42)
-	unsigned int fileSize; // file size of bmp, whose unit is byte(4 bytes)
-	unsigned short reserved1;// zero reserve(2 bytes)
-	unsigned short reserved2;// zero reserve(2 bytes)
-	unsigned int offsetBytes;// offset of pixel(2 bytes)
+	//uint16_t typeTag; //type tag of bmp( 2 bytes,must be 0x4d42)
+	uint32_t fileSize; // file size of bmp, whose unit is byte(4 bytes)
+	uint16_t reserved1;// zero reserve(2 bytes)
+	uint16_t reserved2;// zero reserve(2 bytes)
+	uint32_t offsetBytes;// offset of pixel(2 bytes)
 } BMPFileHeader;
 
 typedef struct _BMPImgHeader{
-	unsigned int headerSize; //size of img header, whose unit is byte
-	unsigned int width; //width of this img,(4 bytes)
-	unsigned int height; //height of this img,(4 bytes)
-	unsigned short planes; // only one plane for each monitor, so equals to 1;
-	unsigned short bitCount;//important.bits per pixel(2 bytes)
-	unsigned int compression;
-	unsigned int imgSize; //should be fileSize-offsetBytes
+	uint32_t headerSize; //size of img header, whose unit is byte
+	uint32_t width; //width of this img,(4 bytes)
+	uint32_t height; //height of this img,(4 bytes)
+	uint16_t planes; // only one plane for each monitor, so equals to 1;
+	uint16_t bitCount;//important.bits per pixel(2 bytes)
+	uint32_t compression;
+	uint32_t imgSize; //should be fileSize-offsetBytes
 	int XPixelsPerMeter;
 	int YPixelsPerMeter;
-	unsigned int colorUsed; // number of used reference colors
-	unsigned int colorImportant;
+	uint32_t colorUsed; // number of used reference colors
+	uint32_t colorImportant;
 } BMPImgHeader;
 
 //color table of BMP file, 4 bytes per color
 typedef struct _ColorInfo{
-	unsigned char b;
-	unsigned char g;
-	unsigned char r;
-	unsigned char reserved;
+	Byte b;
+	Byte g;
+	Byte r;
+	Byte reserved;
 } ColorInfo;
 
 

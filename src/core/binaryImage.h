@@ -8,9 +8,6 @@ using namespace std;
 
 typedef vector<bool> _bitsVector;
 
-//trick: take image as a region set, and a pixel is very large.
-typedef Image RegionSet;
-
 typedef bool (*MorphologyFunc)(bool *kernal,int width);
 
 class BinaryImage{

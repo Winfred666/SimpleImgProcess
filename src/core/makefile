@@ -1,4 +1,4 @@
-source=image.cpp colorTrans.cpp binaryImage.cpp
+source=image.cpp colorTrans.cpp binaryImage.cpp zoneSplit.cpp imageOpt.cpp
 
 compiler=g++ -std=c++11
 names=$(source:%.cpp=%)
@@ -10,13 +10,10 @@ ECHO=./src/core:
 makeO:=$(foreach fileName,$(names),$(compiler) -c $(fileName).cpp -o $(fileName).o$$;)
 
 core.a: $(source)
-	@echo $(ECHO)precompiling program,generate .o files
 
 	$(compiler) -c $(source)
 
 	ar -rcs $(output) $(semifinished)
-
-	@echo $(ECHO)removing .o files
 
 ifeq ($(OS),Windows_NT)
 	del *.o

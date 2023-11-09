@@ -27,7 +27,7 @@ string BinaryImage::toString(){
 
 
 BinaryImage *gray2Binary(Image* img,int thres){
-    if(img->_mode != GRAY){
+    if(img->mode != GRAY){
         throw "try to binarize a colored image, which has more than one channel!";
     }
     int imgH=img->height();
@@ -135,16 +135,18 @@ RegionSet* BinaryImage::getAllRegions(int xSize,int ySize,bool padding){
     int rw=_w/xSize+(_w%xSize!=0);
     int imgSize=this->size();
     int regionSize=xSize*ySize*sizeof(bool);
-    RegionSet* ret=new RegionSet(rw,rw,regionSize*8,ONLY_REGION);
+    RegionSet* ret=new RegionSet(rw,rh,regionSize*8,ONLY_REGION);
     for(int y=0;y<rh;y++){
         for(int x=0;x<rw;x++){
             bool *one=(bool *)ret->getPixel(x,y);
             for(int oney=0;oney<ySize;oney++){
                 for(int onex=0;onex<xSize;onex++){
-                    int regoffset=(oney*ySize+onex);
-                    int picoffset=(y*rw+x)*regionSize+regoffset;
+                    //fillin this region
+                    int regoffset=(oney*xSize+onex);
+                    //remember that the original pixel should be at the same x and y
+                    int picoffset=(( y*ySize + oney)*_w + x*xSize+onex);
                     one[regoffset]=padding;
-                    if(picoffset>0 && picoffset<imgSize)
+                    if(picoffset>=0 && picoffset<imgSize)
                         one[regoffset]=_bits[picoffset];
                 }
             }

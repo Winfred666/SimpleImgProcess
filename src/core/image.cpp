@@ -2,46 +2,54 @@
 #include <stdlib.h>
 #include "image.h"
 
-Image::Image(int w,int h,int bitCounts,ColorMode mode):_w(w),_h(h),_mode(mode){
-        if(bitCounts%4!=0)
-            throw "The number of bits stored per pixel of the image being read is not a multiple of 4!\n";
-        this->_byteCounts=bitCounts/8;
-        this->_img=(Byte *)malloc(w*h*this->_byteCounts);
+Image::Image(int w,int h,int bitCounts,ColorMode mode):_w(w),_h(h),mode(mode){
+    if(bitCounts%4!=0)
+        throw "The number of bits stored per pixel of the image being read is not a multiple of 4!\n";
+    this->_byteCounts=bitCounts/8;
+    this->_img=(Byte *)malloc(w*h*this->_byteCounts);
+    _histogram=NULL;
 }
 
-Image::Image(Image &img):_w(img._w),_h(img._h),_mode(img._mode),_byteCounts(img._byteCounts){
+Image::Image(Image &img):_w(img._w),_h(img._h),mode(img.mode),_byteCounts(img._byteCounts){
     this->_img=(Byte *)malloc(img.size());
     memcpy(this->_img,img._img,img.size());
+    _histogram=NULL;
 }
 
 void Image::readFile(FILE *fp){
     fread(this->_img,sizeof(Byte),size(),fp);
 }
 
-//get pointer position of certain pixel, need to use bitCounts,could be NULL if w and h out of range.
-Byte * Image::getPixel(int x,int y){
-    if(x<0 || x>=this->_w || y<0 || y>=this->_h){
-        throw "Access pixel out of bound!\n";
-    }
-    return this->_img+((y*this->_w*this->_byteCounts)+(x*this->_byteCounts));
+void Image::readBytes(const Byte *src){
+    memcpy(_img,src,size());
 }
+
 
 //do operation to all pixel, also need to use bitCounts to make sure operating zone.
 void Image::iterateAll(PixelWalker walker){
-    for(int x=0;x<this->_w;x++){
-        for(int y=0;y<this->_h;y++){
-            walker(getPixel(x,y),this->_mode);
+    for(int y=0;y<_h;y++){
+        for(int x=0;x<_w;x++){
+            walker(getPixel(x,y),this->mode);
         }
     }
 }
+
+void Image::iterateAll(PixelWalker2 iterate){
+    for(int y=0;y<_h;y++){
+        for(int x=0;x<_w;x++){
+            iterate(getPixel(x,y),this);
+        }
+    }
+}
+
 
 Image* Image::splitChannel(int channel){
     if(channel<0 || channel>=this->_byteCounts) throw "try to split unexist image channel";
     
     Image *ret=new Image(this->_w,this->_h,8,GRAY);
     int k=0;
-    for(int x=0;x<this->_w;x++){
-        for(int y=0;y<this->_h;y++){
+    for(int y=0;y<this->_w;y++){
+        for(int x=0;x<this->_h;x++){
             *(ret->_img+k)=*(getPixel(x,y)+channel);
             k++;
         }
@@ -69,8 +77,49 @@ const Byte * Image::getDataPtr(){
     return this->_img;
 }
 
+const float * Image::getHistogram(){
+    if(_histogram!=NULL)
+        return _histogram;
+    const int size=sizeof(float)*ColorLevel*_byteCounts;
+    _histogram=(float *)malloc(size*2);
+    memset(_histogram,0,size*2);
+
+    for(int y=0;y<_h;y++){
+        for(int x=0;x<_w;x++){
+            Byte *pix=getPixel(x,y);
+            for(int cha=0;cha<_byteCounts;cha++){
+                //jump to color scale sum space.
+                _histogram[*(pix+cha)+cha*ColorLevel]++;
+            }
+        }
+    }
+    const int pixNum=_w*_h;
+    const int hisSize=ColorLevel*_byteCounts;
+    float *accumulate=_histogram+hisSize;
+    for(int q=0;q<hisSize;q++){
+        _histogram[q]/=pixNum;
+    }
+
+    for(int cha=0;cha<_byteCounts;cha++){
+        float *dest=accumulate+ColorLevel*cha, *src=_histogram+ColorLevel*cha;
+        for(int level=0;level<ColorLevel;level++){
+            dest[level]=src[level]+(level==0?0:dest[level-1]);
+        }
+    }
+    return _histogram;
+}
+
+void Image::remakeHistogram(){
+    if(_histogram!=NULL) free(_histogram);
+    _histogram=NULL;
+    getHistogram();
+}
+
 Image::~Image(){
     free (this->_img);
+    if(_histogram!=NULL){
+        free(_histogram);
+    }
 }
 
 
