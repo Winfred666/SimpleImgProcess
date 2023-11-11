@@ -16,6 +16,7 @@ class Image;
 
 typedef void (*PixelWalker)(Byte *pixel,ColorMode mode);
 typedef void (*PixelWalker2)(Byte *pixel,Image* self);
+typedef void (*PixelWalker3)(Byte *pixel,int x,int y,Image *self);
 
 class Image;
 //trick: take image as a region set, and a pixel is very large.
@@ -48,10 +49,15 @@ public:
     //fill image data using file.
     void readFile(FILE *fp);
 	void readBytes(const Byte *src);
+	//set all to 0.
+	void clear();
+
 	//get pointer position of certain pixel, need to use bitCounts,could be NULL if w and h out of range.
 	inline Byte * getPixel(int x,int y){
 		if(x<0 || x>=this->_w || y<0 || y>=this->_h){
-			throw "Access pixel out of bound!\n";
+			char err[100];
+			sprintf(err,"Access pixel (%d , %d) out of bound!\n",x,y);
+			throw (std::string)err;
 		}
 		return this->_img+((y*this->_w*this->_byteCounts)+(x*this->_byteCounts));
 	}
@@ -60,18 +66,25 @@ public:
     //operate every pixel, also need to use bitCounts to make sure operating zone.
 	void iterateAll(PixelWalker iterate);
 	void iterateAll(PixelWalker2 iterate);
+	void iterateAll(PixelWalker3 iterate);
 	//get a h*w size byte array, store one channel of this image.
 	Image* splitChannel(int channel);
 	
 	//important, know the number of byte one pixel has.
-	int bytePerPixel();
+	inline int bytePerPixel() const{
+		return this->_byteCounts;
+	}
 
-	int height();
+	inline int height() const{
+		return this->_h;
+	}
 	
-	int width();
+	inline int width() const{
+	    return this->_w;
+	}
 
     //count _img size by bytes.
-    int size();
+    int size() const;
 
 	const Byte *getDataPtr();
 
@@ -87,7 +100,7 @@ public:
     RegionSet* getAllRegions(int xSize,int ySize,Byte* padding);
 
 	Image* getROI(int stax,int stay,int endx,int endy);
-
+	void setROI(int stax,int stay,Image *src);
 	~Image();
 	
 	inline float getHistoRatio(int channel,int colorLevel){

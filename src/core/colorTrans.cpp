@@ -22,20 +22,6 @@ void HSV2BGR(Image *img){
 }
 
 
-//transfer every pixel from RGB to HSI
-void RGB2HSI(Image *img){
-	if(!isRGB(img->mode)) throw "Try to transfer non-RGB image from RGB to HSV!";
-	if(img->bytePerPixel()!=3) throw "try to transfer non-24Bit per pixel image from RGB to HSV!";
-	img->iterateAll(RGB2HSI_Pixel);
-	img->mode=HSI;
-}
-
-void HSI2BGR(Image *img){
-	if(img->mode!=HSI) throw "Try to transfer non-HSI image to BGR!";
-	img->iterateAll(HSI2BGR_Pixel);
-	img->mode=BGR;
-}
-
 void RGB2YUV(Image *img){
 	if(!isRGB(img->mode)) throw "Try to transfer non-RGB image from RGB to YUV!";
 	if(img->bytePerPixel()!=3) throw "try to transfer non-24Bit per pixel image from RGB to YUV!";
@@ -65,6 +51,40 @@ Image * GRAY2YUV(Image *img){
 	return ret;
 }
 
+//add one channel.
+Image * RGB2RGBA(Image *img){
+	if(img->mode!=RGB && img->mode!=BGR) throw "RGB2RGBA: Tray to add alpha channel to a non-RGB image!";
+	int w=img->width(), h=img->height();
+	const ColorMode dest=(img->mode == RGB ? RGBA:BGRA);
+	Image *ret=new Image(w,h,8*4,dest);
+	for(int y=0;y<h;y++){
+		for(int x=0;x<w;x++){
+			Byte *src=img->getPixel(x,y);
+			Byte *dest=ret->getPixel(x,y);
+			for(int q=0;q<3;q++)
+				dest[q]=src[q];
+			dest[3]=255;
+		}
+	}
+	return ret;
+}
+
+
+Image * RGBa2RGB(Image *img){
+	if(img->mode!=RGBA && img->mode!=BGRA) throw "RGBA2RGBB: Tray to kill alpha channel to a non-RGBA image!";
+	int w=img->width(), h=img->height();
+	const ColorMode dest=(img->mode == RGBA ? RGB:BGR);
+	Image *ret=new Image(w,h,8*3,dest);
+	for(int y=0;y<h;y++){
+		for(int x=0;x<w;x++){
+			Byte *src=img->getPixel(x,y);
+			Byte *dest=ret->getPixel(x,y);
+			for(int q=0;q<3;q++)
+				dest[q]=src[q];
+		}
+	}
+	return ret;
+}
 
 void colorTrans_ns::YUV2BGR_Pixel(Byte *pixel,ColorMode mode){
 	Byte Y=*(pixel+0);
@@ -132,48 +152,6 @@ void colorTrans_ns::HSV2BGR_Pixel(Byte *pixel,ColorMode mode){
 	}else if(hi==5){
 		pixel[2]=V;pixel[1]=p;pixel[0]=q;
 	}
-}
-
-void colorTrans_ns::RGB2HSI_Pixel(Byte *pixel,ColorMode mode){
-	Byte R=*(pixel+getR(mode)), G=*(pixel+getG(mode)), B=*(pixel+getB(mode)),
-	min=R;
-	if(B<min) min=B;
-	if(G<min) min=G;
-
-	float cyta=acosf((2*R-G-B)/
-		(2*sqrtf((R-G)*(R-G)+(R-B)*(G-B)))
-	);
-	
-	pixel[0]= (B>G ? 2*PI-cyta : cyta)*1.0f*255/(2*PI);
-	pixel[1]=(1-1.0f*min*3/(R+B+G))*255;
-	pixel[2]=(R+B+G)/3.0f;
-}
-
-const float PI1D3=PI/3;
-const float PI2D3=PI/3*2;
-const float PI4D3=PI/3*4;
-
-void colorTrans_ns::HSI2BGR_Pixel(Byte *pixel, ColorMode mode){
-	float H=pixel[0]*1.0f*(2*PI)/255,
-		S=pixel[1]*1.0f/255,
-		I=pixel[2];
-	Byte B,G,R;
-	if(H<PI2D3){
-		B=I*(1-S);
-		R=I*(1+S*cosf(H)/cosf(PI1D3-H));
-		G=3*I-(R+B);
-	}else if(H<PI4D3){
-		H-=PI2D3;
-		R=I*(1-S);
-		G=I*(1+S*cosf(H)/cosf(PI1D3-H));
-		B=3*I-(R+G);
-	}else{
-		H-=PI4D3;
-		G=I*(1-S);
-		B=I*(1+S*cosf(H)/cosf(PI1D3-H));
-		R=3*I-(G+B);
-	}
-	pixel[0]=B;pixel[1]=G;pixel[2]=R;
 }
 
 

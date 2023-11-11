@@ -1,14 +1,15 @@
 #include <iostream>
-#include <cmath>
-#include <vector>
 
-#include "./io/readBMP.h"
-#include "./io/readJPEG.h"
+#include "readBMP.h"
+#include "readJPEG.h"
 
 #include "image.h"
 #include "imageOpt.h"
+#include "geometry.h"
 
 using namespace std;
+
+using namespace TransTool_ns;
 
 float linear_expand(float a){
 	float ret=0;
@@ -32,32 +33,30 @@ float pow4(float a){
 	return a*a*a*a;
 }
 
+
 int main(){
 	char fileName[20]="test.bmp";
 	//wrapped by try-catch to collect and print string exception.
 	try{
-		FILE *fp=fopen_s(fileName,"rb");
-		FILE *out=fopen_s("verify/out_hiseql_V.bmp","wb");
-		//FILE *out2=fopen_s("verify/out_logarithm.bmp","wb");
+		FILE *inputF=fopen_s(fileName,"rb");
+		FILE *outputF=fopen_s("verify/scale.bmp","wb");
+		Image *in=readBMP(inputF);
 		
-		Image *in=readBMP(fp);
-		//Image *copy=new Image(*in);
-		RGB2HSV(in);
-		//histogramEqualize_V(in);
-		histoTrans(in,pow4,2);
-		HSV2BGR(in);
-		//still have bug when write jpeg.
-		//writeJPEG(out,in);
-		writeBMP(out,in);
+		TransZone trans(in,1,0);
+		TransMatrix rota45,mid={{0.8,0,0},{0,-0.6,0},{0,0,1}};
+		getScaleMat(rota45,2,2);
+		trans.applyTrans(mid,true,TRANS_LINEAR);
+		Image *temp=trans.getOutput();
 		
-		//logarithmic_Y(copy,1.1);
-		//writeBMP(out2,copy);
-
-		fclose(fp);
-		fclose(out);
-		//fclose(out2);
+		Image *out=RGBa2RGB(temp);
+		//delete temp;
+		//temp=out->getROI(50,200,250,400);
+		writeBMP(outputF,out);
+		fclose(inputF);
+		fclose(outputF);
+		delete out;
 		delete in;
-		//delete copy;
+		delete temp;
 	}catch(char const *e){
 		printf("catch Exception: %s\n",e);
 	}catch(string e){

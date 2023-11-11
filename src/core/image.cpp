@@ -24,6 +24,9 @@ void Image::readBytes(const Byte *src){
     memcpy(_img,src,size());
 }
 
+void Image::clear(){
+    memset(_img,0,size());
+}
 
 //do operation to all pixel, also need to use bitCounts to make sure operating zone.
 void Image::iterateAll(PixelWalker walker){
@@ -33,7 +36,6 @@ void Image::iterateAll(PixelWalker walker){
         }
     }
 }
-
 void Image::iterateAll(PixelWalker2 iterate){
     for(int y=0;y<_h;y++){
         for(int x=0;x<_w;x++){
@@ -41,7 +43,13 @@ void Image::iterateAll(PixelWalker2 iterate){
         }
     }
 }
-
+void Image::iterateAll(PixelWalker3 iterate){
+    for(int y=0;y<_h;y++){
+        for(int x=0;x<_w;x++){
+            iterate(getPixel(x,y),x,y,this);
+        }
+    }
+}
 
 Image* Image::splitChannel(int channel){
     if(channel<0 || channel>=this->_byteCounts) throw "try to split unexist image channel";
@@ -57,19 +65,8 @@ Image* Image::splitChannel(int channel){
     return ret;
 }
 
-int Image::bytePerPixel(){
-	return this->_byteCounts;
-}
 
-int Image::height(){
-    return this->_h;
-}
-
-int Image::width(){
-    return this->_w;
-}
-
-int Image::size(){
+int Image::size() const{
     return this->_h*this->_w*this->_byteCounts;
 }
 

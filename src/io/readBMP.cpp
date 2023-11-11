@@ -107,7 +107,19 @@ void writeBMP(FILE *output,Image *img){
 		free(plattee);
 	}
 
-	fwrite(img->getDataPtr(),iHeader.imgSize,1,output);
+	if(iHeader.width%4==0)
+		fwrite(img->getDataPtr(),iHeader.imgSize,1,output);
+	else{
+		//not divided by 4.
+		int mol=iHeader.width%4;
+		int bytes=img->bytePerPixel();
+		Byte Pad=0x00;
+		for(int q=0;q<iHeader.height;q++){
+			fwrite(img->getPixel(0,q),iHeader.width*bytes,1,output);
+			for(int w=0;w<mol;w++)
+				fwrite(&Pad,1,1,output);
+		}
+	}
 }
 
 //safely open a file,overwrite.
