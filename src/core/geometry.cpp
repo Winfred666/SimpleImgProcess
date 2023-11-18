@@ -78,6 +78,8 @@ Image *TransZone::getOutput(){
     return res;
 }
 
+
+
 void TransZone::src2output(Point2 dest,int srcX,int srcY){
     dest[0]=srcX-_origin[0];
     dest[1]=srcY-_origin[1];
@@ -376,6 +378,7 @@ float *TransTool_ns::generateKernal(KernalFunc func,float param){
             *(weightKer+y*KerSize+x)/=sum;
         }
     }
+	return weightKer;
 }
 
 float TransTool_ns::gaussian2D(float disx,float disy,float sigma){

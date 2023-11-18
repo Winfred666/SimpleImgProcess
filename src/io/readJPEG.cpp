@@ -8,7 +8,7 @@ using std::cout;
 using std::endl;
 
 Image* readJPEG(FILE *JPEG){
-
+	return NULL;
 }
 
 void writeJPEG(FILE *output,Image *img){

@@ -38,14 +38,17 @@ private:
     Point2 _origin;
     //expandZone and keep original point the same position.
     void _expandZone(int expandPad);
-    void _trimPadding();
+
 public:
     //transfrom matrix
     static const TransMatrix UniMat;
-
+	void _trimPadding();
     TransZone(Image *src,float oriX=0.5f,float oriY=0.5f);
     //copy _output.
     Image *getOutput();
+	inline const Image *TransZone::getOriOutput() const {
+		return _output;
+	}
     /**
      * could apply any matrixes.
      * @note most transforms are suggest to multiply to the left.

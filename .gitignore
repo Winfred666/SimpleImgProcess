@@ -6,4 +6,6 @@
 
 /public/verify/
 
-/visualize
+/visualize/build/
+
+/

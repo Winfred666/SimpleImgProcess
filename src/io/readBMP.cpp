@@ -46,7 +46,17 @@ Image* readBMP(FILE *BMP){
 	if(per==3*8) mode=BGR;
 	else if(per==4*8) mode=BGRA;
 	Image *bmpImg=new Image(w,h,per,mode);
-	bmpImg->readFile(BMP);
+	if(iHeader.width%4==0){
+		bmpImg->readFile(BMP);
+	}else{
+		int mol=iHeader.width%4;
+		Byte pad[4];
+		for(int y=0;y<iHeader.height;y++){
+			Byte *dest=bmpImg->getPixel(0,y);
+			fread(dest,(per/8)*iHeader.width,1,BMP);
+			fread(pad,mol,1,BMP);
+		}
+	}
 
 	return bmpImg;
 }
@@ -124,10 +134,22 @@ void writeBMP(FILE *output,Image *img){
 
 //safely open a file,overwrite.
 FILE *fopen_s(const char *name,const char *mode){
-	char path[30];
+	char path[50];
 	sprintf((char *)path,"../public/%s",name);
 	FILE *fp=fopen(path,mode);
-	if(fp==NULL){
+	if(fp == NULL) {
+		sprintf((char *)path, "../../public/%s", name);
+		fp = fopen(path, mode);
+	}
+	if (fp == NULL) {
+		sprintf((char *)path, "../../../public/%s", name);
+		fp = fopen(path, mode);
+	}
+	if (fp == NULL) {
+		sprintf((char *)path, "%s", name);
+		fp = fopen(path, mode);
+	}
+	if(fp == NULL){
 		throw "fail to open the image!";
 	}
 	return fp;

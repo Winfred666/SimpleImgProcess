@@ -61,6 +61,9 @@ public:
 		}
 		return this->_img+((y*this->_w*this->_byteCounts)+(x*this->_byteCounts));
 	}
+	inline const Byte *getPixel(int x, int y) const{
+		return this->_img + ((y*this->_w*this->_byteCounts) + (x*this->_byteCounts));
+	}
 
 	//core function
     //operate every pixel, also need to use bitCounts to make sure operating zone.
